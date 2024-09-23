@@ -51,7 +51,7 @@
 
 // <q SL_BOARD_ENABLE_SENSOR_IMU> Enable Inertial Measurement Unit
 // <i> Default: 0
-#define SL_BOARD_ENABLE_SENSOR_IMU              0
+#define SL_BOARD_ENABLE_SENSOR_IMU              1
 
 // <q SL_BOARD_DISABLE_MEMORY_SPI> Disable SPI Flash
 // <i> Default: 1
