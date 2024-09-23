@@ -6,7 +6,7 @@
     <properties key="universalConfig.generationDirectory" value=""/>
     <properties key="universalConfig.toolchainCompatibility" value="iar gcc"/>
     <properties key="projectCommon.boardIds" value="brd2603a:0.0.0.A00"/>
-    <properties key="projectCommon.kitId" value=""/>
+    <properties key="projectCommon.kitId" value="dk2603a:0.0.0.A01"/>
     <properties key="projectCommon.partId" value="mcu.arm.efr32.zg23.zgm230sb27hgn"/>
     <properties key="projectCommon.toolchainId" value="com.silabs.ss.tool.ide.arm.toolchain.gnu.cdt:12.2.1.20221205"/>
     <properties key="universalConfig.projectTypeIds" value="visual-studio-code"/>

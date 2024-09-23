@@ -66,10 +66,11 @@ component:
 - {id: gpiointerrupt}
 - {id: imu_driver}
 - {id: mpu}
-- instance: [led0]
-  id: simple_led
+- instance: [rgb_led0]
+  id: simple_rgb_pwm_led
 - {id: sl_system}
 - {id: zaf_ncp}
+- {id: zgm230_dk2603a}
 - {id: zw_api_controller}
 - {id: zw_api_zw}
 - {id: zw_app_timer_deep_sleep}
