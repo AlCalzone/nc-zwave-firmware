@@ -41,6 +41,10 @@
 #include "ZAF_PrintAppInfo.h"
 #endif
 #include "ZAF_AppName.h"
+#include "UserTask_DataAcquisition.h"
+
+#include "events.h"
+#include "sl_simple_rgb_pwm_led_instances.h"
 
 #include <assert.h>
 
@@ -129,6 +133,20 @@ zpal_pm_handle_t radio_power_lock;
 zpal_pm_handle_t io_power_lock;
 SSwTimer mWakeupTimer;
 bool bTxStatusReportEnabled;
+
+int16_t last_gyro_measurement[3] = {0, 0, 0};
+
+/********************************
+ * Data Acquisition Task
+ *******************************/
+#define TASK_STACK_SIZE_DATA_ACQUISITION           1000  // [bytes]
+static TaskHandle_t m_xTaskHandleDataAcquisition   = NULL;
+// Task and stack buffer allocation for the default/main application task!
+static StaticTask_t DataAcquisitionTaskBuffer;
+static uint8_t DataAcquisitionStackBuffer[TASK_STACK_SIZE_DATA_ACQUISITION];
+
+static void ApplicationInitSW(void);
+static void ApplicationTask(SApplicationHandles *pAppHandles);
 
 #ifdef ZW_CONTROLLER_BRIDGE
 static void ApplicationCommandHandler_Bridge(SReceiveMulti *pReciveMulti);
@@ -769,6 +787,59 @@ ZCB_WakeupTimeout(__attribute__((unused)) SSwTimer *pTimer)
   DPRINT("ZCB_WakeupTimeout\n");
 }
 
+
+void
+zaf_event_distributor_app_proprietary(event_nc_t *event)
+{
+  // Handles NC-specific proprietary events
+  EVENT_APP event_nc = (EVENT_APP) event->event;
+  switch (event_nc) {
+    case EVENT_APP_USERTASK_READY:
+      sl_simple_rgb_pwm_led_rgb_led0.led_common.turn_on(
+          sl_simple_rgb_pwm_led_rgb_led0.led_common.context
+      );
+      break;
+    case EVENT_APP_USERTASK_GYRO_MEASUREMENT:
+      // Determine controller orientation
+      int16_t avec[3];
+      sl_imu_get_acceleration(avec);
+      // Figure out how "vertical" this vector is
+      int16_t verticality = (int16_t)(((float) abs(avec[2])) / 1000.0f * 256.0f);
+      sl_simple_rgb_pwm_led_rgb_led0.set_rgb_color(
+          sl_simple_rgb_pwm_led_rgb_led0.led_common.context,
+          (256 - verticality),
+          verticality,
+          0
+      );
+      // Report significant changes to the host
+      // TODO: Report after stabilization
+      if (abs(last_gyro_measurement[0] - avec[0]) > 50 ||
+          abs(last_gyro_measurement[1] - avec[1]) > 50 ||
+          abs(last_gyro_measurement[2] - avec[2]) > 50)
+      {
+        uint8_t cmd[6];
+        cmd[0] = avec[0] >> 8;
+        cmd[1] = avec[0] & 0xFF;
+        cmd[2] = avec[1] >> 8;
+        cmd[3] = avec[1] & 0xFF;
+        cmd[4] = avec[2] >> 8;
+        cmd[5] = avec[2] & 0xFF;
+        RequestUnsolicited(
+          FUNC_ID_PROPRIETARY_0,
+          cmd,
+          6
+        );
+      }
+
+      memcpy(last_gyro_measurement, avec, sizeof(last_gyro_measurement));
+      break;
+
+    default:
+      // Nothing to do
+      break;
+  }
+}
+
 /*==============================   ApplicationInitSW   ======================
 **    Initialization of the Application Software
 **
@@ -917,6 +988,23 @@ ApplicationInit(
                                                     zaf_get_protocol_config()
                                                     );
   assert(bWasTaskCreated);
+
+  // Interact with the Gyro in a background task
+  ZW_UserTask_Buffer_t dataAcquTaskBuffer;
+  dataAcquTaskBuffer.taskBuffer = &DataAcquisitionTaskBuffer;
+  dataAcquTaskBuffer.stackBuffer = DataAcquisitionStackBuffer;
+  dataAcquTaskBuffer.stackBufferLength = TASK_STACK_SIZE_DATA_ACQUISITION;
+
+  // Create the task setting-structure!
+  ZW_UserTask_t task;
+  task.pTaskFunc = (TaskFunction_t)NC_UserTask_DataAcquisition;
+  task.pTaskName = "DataAcqu";
+  task.pUserTaskParam = NULL;  // We pass nothing here, as the EventHelper is already initialized and can be used for task IPC!
+  task.priority = USERTASK_PRIORITY_NORMAL;
+  task.taskBuffer = &dataAcquTaskBuffer;
+
+  // Create the task!
+  ZW_UserTask_CreateTask(&task, &m_xTaskHandleDataAcquisition);
 
   return (APPLICATION_RUNNING); /*Return false to enter production test mode*/
 }
