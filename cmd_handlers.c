@@ -3240,3 +3240,16 @@ ZW_ADD_CMD(FUNC_ID_APPLICATION_COMMAND_HANDLER_BRIDGE)
 ZW_ADD_CMD(FUNC_ID_ZW_GET_PROTOCOL_STATUS)
 {
 }
+
+// // NC specific SAPI commands
+// ZW_ADD_CMD(FUNC_ID_PROPRIETARY_0)
+// {
+//   /* HOST->ZW: ledEnabled */
+//   /* ZW->HOST: RES | true */
+//   if (frame->payload[0] == 0xff) {
+//       sl_led_led0.turn_on(sl_led_led0.context);
+//   } else {
+//       sl_led_led0.turn_off(sl_led_led0.context);
+//   }
+//   DoRespond(0x00);
+// }
