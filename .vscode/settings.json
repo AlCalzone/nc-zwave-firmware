@@ -5,6 +5,19 @@
 		"*.vbhtml": "razor",
 		"zw_application_transport_interface.h": "c",
 		"zaf_event_distributor.h": "c",
-		"eventdistributor.h": "c"
+		"eventdistributor.h": "c",
+		"cmds_management.h": "c",
+		"app.h": "c",
+		"serialapi_file.h": "c",
+		"utils.h": "c",
+		"zpal_misc.h": "c",
+		"zaf_common_interface.h": "c",
+		"sl_simple_led.h": "c",
+		"sl_simple_rgb_pwm_led_instances.h": "c",
+		"sl_simple_led_instances.h": "c",
+		"string.h": "c",
+		"mfgtokens.h": "c",
+		"cmds_proprietary.h": "c",
+		"stdint.h": "c"
 	}
 }

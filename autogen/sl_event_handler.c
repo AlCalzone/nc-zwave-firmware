@@ -20,6 +20,7 @@
 #include "gpiointerrupt.h"
 #include "sl_mbedtls.h"
 #include "nvm3_default.h"
+#include "sl_simple_led_instances.h"
 #include "sl_simple_rgb_pwm_led_instances.h"
 #include "ZW_basis_api.h"
 #include "psa/crypto.h"
@@ -54,6 +55,7 @@ void sl_kernel_start(void)
 void sl_driver_init(void)
 {
   GPIOINT_Init();
+  sl_simple_led_init_instances();
   sl_simple_rgb_pwm_led_init_instances();
 }
 

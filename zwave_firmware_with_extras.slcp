@@ -66,6 +66,8 @@ component:
 - {id: gpiointerrupt}
 - {id: imu_driver}
 - {id: mpu}
+- instance: [led0]
+  id: simple_led
 - instance: [rgb_led0]
   id: simple_rgb_pwm_led
 - {id: sl_system}
