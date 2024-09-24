@@ -30,6 +30,7 @@
 #include "serialapi_file.h"
 #include "cmd_handlers.h"
 #include "cmds_management.h"
+#include "cmds_proprietary.h"
 #include "ZAF_Common_interface.h"
 #include "utils.h"
 #include "app_hw.h"
@@ -134,7 +135,7 @@ zpal_pm_handle_t io_power_lock;
 SSwTimer mWakeupTimer;
 bool bTxStatusReportEnabled;
 
-int16_t last_gyro_measurement[3] = {0, 0, 0};
+bool bRequestGyroMeasurement = false;
 
 /********************************
  * Data Acquisition Task
@@ -795,43 +796,32 @@ zaf_event_distributor_app_proprietary(event_nc_t *event)
   EVENT_APP event_nc = (EVENT_APP) event->event;
   switch (event_nc) {
     case EVENT_APP_USERTASK_READY:
-      sl_simple_rgb_pwm_led_rgb_led0.led_common.turn_on(
-          sl_simple_rgb_pwm_led_rgb_led0.led_common.context
-      );
+      // nothing to do
       break;
     case EVENT_APP_USERTASK_GYRO_MEASUREMENT:
-      // Determine controller orientation
+      if (!bRequestGyroMeasurement) {
+        return;
+      }
+      bRequestGyroMeasurement = false;
+
+      // A gyro measurement was requested
       int16_t avec[3];
       sl_imu_get_acceleration(avec);
-      // Figure out how "vertical" this vector is
-      int16_t verticality = (int16_t)(((float) abs(avec[2])) / 1000.0f * 256.0f);
-      sl_simple_rgb_pwm_led_rgb_led0.set_rgb_color(
-          sl_simple_rgb_pwm_led_rgb_led0.led_common.context,
-          (256 - verticality),
-          verticality,
-          0
+      
+      uint8_t cmd[8];
+      uint8_t i=0;
+      cmd[i++] = NABU_CASA_GYRO_MEASURE;
+      cmd[i++] = avec[0] >> 8;
+      cmd[i++] = avec[0] & 0xFF;
+      cmd[i++] = avec[1] >> 8;
+      cmd[i++] = avec[1] & 0xFF;
+      cmd[i++] = avec[2] >> 8;
+      cmd[i++] = avec[2] & 0xFF;
+      RequestUnsolicited(
+        FUNC_ID_PROPRIETARY_0,
+        cmd,
+        i
       );
-      // Report significant changes to the host
-      // TODO: Report after stabilization
-      if (abs(last_gyro_measurement[0] - avec[0]) > 50 ||
-          abs(last_gyro_measurement[1] - avec[1]) > 50 ||
-          abs(last_gyro_measurement[2] - avec[2]) > 50)
-      {
-        uint8_t cmd[6];
-        cmd[0] = avec[0] >> 8;
-        cmd[1] = avec[0] & 0xFF;
-        cmd[2] = avec[1] >> 8;
-        cmd[3] = avec[1] & 0xFF;
-        cmd[4] = avec[2] >> 8;
-        cmd[5] = avec[2] & 0xFF;
-        RequestUnsolicited(
-          FUNC_ID_PROPRIETARY_0,
-          cmd,
-          6
-        );
-      }
-
-      memcpy(last_gyro_measurement, avec, sizeof(last_gyro_measurement));
       break;
 
     default:
