@@ -94,11 +94,9 @@ NC_UserTask_DataAcquisition(__attribute__((unused)) void *pUserTaskParam)
 
   task_power_lock = zpal_pm_register(ZPAL_PM_TYPE_DEEP_SLEEP);
 
-  sl_status_t init = sl_imu_init();
-  DPRINTF("init result %s", init);
-  sl_imu_configure(10);
-  init = sl_imu_calibrate_gyro();
-  DPRINTF("calib result %s", init);
+  sl_imu_init();
+  sl_imu_configure(10.0f);
+  sl_imu_calibrate_gyro();
 
   // Generate event that says the Data acquisition UserTask has started!
   if (zaf_event_distributor_enqueue_proprietary_app_event(EVENT_APP_USERTASK_READY))
