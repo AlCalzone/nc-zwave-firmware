@@ -3251,3 +3251,24 @@ ZW_ADD_CMD(FUNC_ID_PROPRIETARY_0)
   func_id_nabu_casa(frame_payload_len(frame), frame->payload, compl_workbuf, &length);
   DoRespond_workbuf(length);
 }
+
+#if SUPPORT_ZW_SET_PROMISCUOUS_MODE
+static void SetPromiscuousMode(uint8_t mode)
+{
+  SZwaveCommandPackage PromiscuousMode = {
+    .eCommandType = EZWAVECOMMANDTYPE_SET_PROMISCUOUS_MODE,
+    .uCommandParams.SetPromiscuousMode.Enable = mode,
+                                       };
+
+  // Put the Command on queue (and dont wait for it, queue must be empty)
+  EQueueNotifyingStatus QueueStatus = QueueNotifyingSendToBack(ZAF_getZwCommandQueue(), (uint8_t*)&PromiscuousMode, 0);
+  ASSERT(EQUEUENOTIFYING_STATUS_SUCCESS == QueueStatus);
+}
+
+ZW_ADD_CMD(FUNC_ID_ZW_SET_PROMISCUOUS_MODE)
+{
+  /* HOST->ZW: promiscuousMode */
+  SetPromiscuousMode(frame->payload[0]);
+  set_state_and_notify(stateIdle);
+}
+#endif
