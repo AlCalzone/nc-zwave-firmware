@@ -33,7 +33,7 @@
 #define SUPPORT_ZW_SEND_NODE_INFORMATION                1 /* ZW_SendNodeInformation */
 #define SUPPORT_ZW_SET_DEFAULT                          1 /* ZW_SetDefault */
 #define SUPPORT_ZW_SET_LEARN_MODE                       1 /* ZW_SetLearnMode */
-#define SUPPORT_ZW_SET_PROMISCUOUS_MODE                 0 /* ZW_SetPromiscuousMode */
+#define SUPPORT_ZW_SET_PROMISCUOUS_MODE                 1 /* ZW_SetPromiscuousMode */
 #define SUPPORT_ZW_SET_RF_RECEIVE_MODE                  1 /* ZW_SetRFReceiveMode */
 #define SUPPORT_ZW_SET_SUC_NODE_ID                      1 /* ZW_SetSUCNodeID */
 #define SUPPORT_ZW_TYPE_LIBRARY                         1 /* ZW_Type_Library */
